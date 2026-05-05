@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Node (in case Phase 2 grows tooling)
+node_modules/
+
+# Local dev tooling — not part of the app
+.claude/
+
+# Editor
+.vscode/
+.idea/
+
+# Misc
+*.log
+.env
+.env.local

@@ -1,0 +1,17 @@
+# Static site — no build step. Deploy the project root as-is.
+[build]
+  publish = "."
+  command = ""
+
+# SPA-style: dialogue/state lives in memory, but routing is fine since
+# we only have one entry. Keep .well-known etc. served normally.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Long-cache static assets if/when we add them
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Nounours — A Story Grows From Your Answers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene"></canvas>
+
+    <!-- Vignette + grain overlay -->
+    <div id="vignette"></div>
+    <div id="grain"></div>
+
+    <!-- INTRO -->
+    <section id="intro" class="overlay">
+      <div class="intro-inner">
+        <p class="kicker">an interactive puppet dream</p>
+        <h1 class="title">Nounours</h1>
+        <p class="subtitle">A story grows from your answers.</p>
+        <button class="btn primary" data-action="begin">
+          <span>Begin</span>
+          <em>press to enter the theatre</em>
+        </button>
+        <p class="footnote">Headphones recommended. Use <kbd>WASD</kbd> or <kbd>arrows</kbd> to move, <kbd>E</kbd> to speak, <kbd>Space</kbd> for a little hop.</p>
+      </div>
+    </section>
+
+    <!-- QUESTIONNAIRE -->
+    <section id="questionnaire" class="overlay hidden">
+      <div class="q-inner">
+        <div class="q-progress"><span class="q-progress-fill"></span></div>
+        <p class="kicker q-step-label">Question 1</p>
+        <h2 class="q-prompt">…</h2>
+        <div class="q-options"></div>
+        <button class="link-btn q-back hidden">go back</button>
+      </div>
+    </section>
+
+    <!-- DIALOGUE -->
+    <section id="dialogue" class="dialogue hidden">
+      <div class="d-inner">
+        <p class="d-name">…</p>
+        <p class="d-text">…</p>
+        <div class="d-choices"></div>
+        <p class="d-hint">press <kbd>E</kbd> or <kbd>Enter</kbd> to continue · <kbd>1</kbd>–<kbd>4</kbd> to choose</p>
+      </div>
+    </section>
+
+    <!-- HUD -->
+    <aside id="hud" class="hidden">
+      <div class="hud-zone"></div>
+      <div class="hud-mems"></div>
+      <button class="hud-btn" data-action="mute">mute</button>
+      <button class="hud-btn" data-action="restart">restart story</button>
+    </aside>
+
+    <!-- INTERACT PROMPT -->
+    <div id="prompt" class="hidden"><kbd>E</kbd> <span></span></div>
+
+    <!-- ENDING -->
+    <section id="ending" class="overlay hidden">
+      <div class="end-inner">
+        <p class="kicker end-kicker">An ending</p>
+        <h2 class="end-title">…</h2>
+        <p class="end-body">…</p>
+        <div class="end-buttons">
+          <button class="btn primary" data-action="restart">begin again</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSITION CURTAIN -->
+    <div id="curtain"><div class="left"></div><div class="right"></div></div>
+  </div>
+
+  <script type="module">
+    // cache-bust during development; harmless in production
+    import(`./src/main.js?v=${Date.now()}`);
+  </script>
+</body>
+</html>
