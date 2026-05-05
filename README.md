@@ -114,14 +114,20 @@ Nounours is currently a single procedurally-drawn composite sprite in `src/textu
 
 NPCs work the same way — replace `make*Texture()` calls with image loads or rigs.
 
-## Phase 2 ideas
+## Phase 2
 
-- A real glTF Nounours rig with idle / walk / wave / look-up clips.
-- Per-zone ambient SFX (wind in forest, hearth in village, surf at the shore) layered onto the existing music.
-- Inventory drawer surfacing collected memories with little sketches.
-- Branching dialog tied to the current weather/time (`profile.time` already enables this — Maru reacts).
-- A reading-aloud option using the Web Speech API, voiced softly per character.
-- A "save your story" flow — dump `state` to a shareable URL fragment.
-- Touch controls (drag-to-walk + tap-to-talk) for mobile.
-- Inverse-kinematic arms on Nounours so he reaches toward NPCs as he approaches.
+### Shipped — Phase 2A: segmented puppet rig
+- `puppet.js` now parents head / torso / two arms / two legs as separate textured planes under a body Group.
+- Walk cycle: alternating leg swings, cross-coordinated arm swings.
+- New animation states: `puppet.wave()` (right arm up-and-out, with hand wiggle), `puppet.reach()` (both arms forward), `puppet.lookAt(worldX)` (head tilt).
+- Interaction system fires the wave once per NPC proximity, the reach when at the revealed door, and the head-tilt continuously toward whoever's nearest.
+- Arm Z stacked above head Z so a raised hand renders in front of the face during a wave.
+
+### Up next
+- Per-zone ambient SFX (wind in forest, hearth in village, surf at shore) layered onto the existing music.
 - A second pass of zones: an attic, a paper-boat journey, a backstage corridor.
+- Inventory drawer surfacing collected memories with little sketches (press <kbd>I</kbd>).
+- Reading aloud via Web Speech API, voiced softly per character.
+- Save-your-story flow — dump `state` to a shareable URL fragment.
+- Touch controls (drag-to-walk + tap-to-talk) for mobile.
+- Replace the procedural Nounours with a hand-drawn / glTF rig — the segmented architecture in `puppet.js` already maps 1:1 to a real rig (each part is its own pivot group; swap the `_mat(tex)` mesh for a glTF scene per part).
