@@ -17,6 +17,9 @@ let camera = null;
 export function initInteractions(c) { camera = c; }
 
 let lastHovered = null;
+let lastWavedAt = null;       // npc id → only wave once per proximity entry
+let lastDoorPromptedAt = 0;   // ms — debounce reach gesture trigger
+let doorReachArmed = true;    // re-arm reach when leaving door proximity
 
 export function updateInteractions(puppet, scene, sceneCamera) {
   if (isDialogueOpen()) return;
@@ -49,6 +52,17 @@ export function updateInteractions(puppet, scene, sceneCamera) {
   }
 
   if (nearest) {
+    // --- expressive: face NPC, look at them, wave on first approach ---
+    if (Math.abs(puppet.vx) < 0.6) {
+      const dx = nearest.def.position[0] - ppos.x;
+      if (Math.abs(dx) > 0.3) puppet.setFacing(Math.sign(dx));
+    }
+    puppet.lookAt(nearest.def.position[0]);
+    if (lastWavedAt !== nearest.id) {
+      puppet.wave();
+      lastWavedAt = nearest.id;
+    }
+
     showPrompt(`speak with ${cleanName(nearest.def.name)}`);
     if (consumeEvent('interact')) {
       sfx('interact');
@@ -63,15 +77,28 @@ export function updateInteractions(puppet, scene, sceneCamera) {
       });
     }
   } else if (doorNear) {
+    if (Math.abs(puppet.vx) < 0.6) {
+      const dx = doorNear.position.x - ppos.x;
+      if (Math.abs(dx) > 0.3) puppet.setFacing(Math.sign(dx));
+    }
+    puppet.lookAt(doorNear.position.x);
+    if (doorReachArmed) {
+      puppet.reach();
+      doorReachArmed = false;
+    }
     showPrompt('open the door');
     if (consumeEvent('interact')) {
       sfx('door');
       puppet.react();
+      puppet.reach();
       // Open ending — the door
       setTimeout(() => triggerEnding('door_beyond'), 700);
     }
   } else {
     hidePrompt();
+    puppet.lookAt(null);
+    lastWavedAt = null;
+    doorReachArmed = true;
     consumeEvent('interact'); // swallow stray E presses
   }
 

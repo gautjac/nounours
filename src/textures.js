@@ -50,8 +50,162 @@ function furBlob(ctx, x, y, r, base) {
   ctx.restore();
 }
 
-// ----------------- NOUNOURS -----------------
+// ----------------- NOUNOURS — segmented rig -----------------
+// Each body part is its own canvas/texture so the puppet rig in
+// puppet.js can swing arms, kick legs, tilt the head, and wave on
+// approach. Pivots are documented per-function.
 
+// HEAD — pivot at the bottom edge of the canvas (the neck).
+// Place the resulting plane with mesh.position.y = +headH * 0.35
+// inside a head-pivot Group so the chin sits at the pivot.
+export function makeHeadTex() {
+  const W = 380, H = 400;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+
+  ctx.save();
+  ctx.translate(W/2, H * 0.55);
+
+  // ears
+  furBlob(ctx, -120, -110, 52, '#5a3622');
+  furBlob(ctx,  120, -110, 52, '#5a3622');
+  ctx.fillStyle = '#a8755a';
+  ctx.beginPath(); ctx.ellipse(-120, -105, 22, 28, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse( 120, -105, 22, 28, 0, 0, Math.PI*2); ctx.fill();
+
+  // head main
+  furBlob(ctx, 0, 0, 150, '#6e4126');
+
+  // muzzle (lighter fur)
+  ctx.save();
+  ctx.fillStyle = '#caa07a';
+  ctx.beginPath(); ctx.ellipse(0, 50, 75, 60, 0, 0, Math.PI*2); ctx.fill();
+  for (let i = 0; i < 60; i++) {
+    const a = Math.random()*Math.PI*2, rr = Math.random()*60;
+    ctx.fillStyle = 'rgba(120, 80, 50, 0.25)';
+    ctx.beginPath(); ctx.arc(Math.cos(a)*rr, 50 + Math.sin(a)*40, 1.2, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // nose
+  ctx.fillStyle = '#1c1208';
+  ctx.beginPath(); ctx.ellipse(0, 18, 24, 18, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath(); ctx.ellipse(-6, 12, 7, 4, 0, 0, Math.PI*2); ctx.fill();
+
+  // smile
+  ctx.strokeStyle = 'rgba(28, 18, 8, 0.6)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-1, 38); ctx.lineTo(-1, 52);
+  ctx.moveTo(-1, 52); ctx.quadraticCurveTo(-18, 68, -28, 60);
+  ctx.moveTo(-1, 52); ctx.quadraticCurveTo( 18, 68,  28, 60);
+  ctx.stroke();
+
+  // eyes
+  drawEye(ctx, -55, -35, 30);
+  drawEye(ctx,  55, -35, 30);
+
+  // bandage on forehead
+  drawBandage(ctx, -30, -120);
+
+  ctx.restore();
+  return asTexture(c);
+}
+
+// TORSO + VEST — pivot at center; placed at ~chest height in the rig.
+export function makeBodyTex() {
+  const W = 340, H = 320;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.save();
+  ctx.scale(1, 1.05);
+  furBlob(ctx, 0, 0, 130, '#6a3f25');
+  ctx.restore();
+
+  // patchwork vest centered on torso
+  drawVest(ctx, 0, 0);
+
+  ctx.restore();
+  return asTexture(c);
+}
+
+// ARM — pivot at TOP center (shoulder). Place mesh.position.y = -armH/2
+// inside an arm-pivot Group at the shoulder coordinate. Mirror via
+// scale.x = -1 if needed for the opposite side.
+export function makeArmTex() {
+  const W = 90, H = 200;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  ctx.save();
+  ctx.translate(W/2, 12);
+
+  // arm: tapered fur shape with paw at the bottom
+  ctx.fillStyle = '#5a3622';
+  ctx.beginPath();
+  ctx.moveTo(-26, 0);
+  ctx.bezierCurveTo(-36, 60, -34, 130, -22, 156);
+  ctx.bezierCurveTo(-6, 168, 6, 168, 22, 156);
+  ctx.bezierCurveTo(34, 130, 36, 60, 26, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // fur noise
+  for (let i = 0; i < 70; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const rr = 22;
+    const px = (Math.random() - 0.5) * 50;
+    const py = Math.random() * 156;
+    ctx.fillStyle = Math.random() < 0.5 ? 'rgba(40, 22, 12, 0.22)' : 'rgba(255, 220, 170, 0.18)';
+    ctx.beginPath(); ctx.arc(px, py, 1 + Math.random()*2, 0, Math.PI*2); ctx.fill();
+  }
+
+  // paw pad
+  ctx.fillStyle = '#caa07a';
+  ctx.beginPath(); ctx.ellipse(0, 156, 14, 9, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+  return asTexture(c);
+}
+
+// LEG — pivot at TOP center (hip). Same convention as arms.
+export function makeLegTex() {
+  const W = 110, H = 160;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  ctx.save();
+  ctx.translate(W/2, 8);
+
+  // leg: stubby fur shape
+  ctx.fillStyle = '#5a3622';
+  ctx.beginPath();
+  ctx.moveTo(-32, 0);
+  ctx.bezierCurveTo(-46, 36, -46, 90, -36, 116);
+  ctx.bezierCurveTo(-22, 130, 22, 130, 36, 116);
+  ctx.bezierCurveTo(46, 90, 46, 36, 32, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // fur noise
+  for (let i = 0; i < 50; i++) {
+    const px = (Math.random() - 0.5) * 70;
+    const py = Math.random() * 120;
+    ctx.fillStyle = Math.random() < 0.5 ? 'rgba(40, 22, 12, 0.22)' : 'rgba(255, 220, 170, 0.18)';
+    ctx.beginPath(); ctx.arc(px, py, 1 + Math.random()*2, 0, Math.PI*2); ctx.fill();
+  }
+
+  // foot pad
+  ctx.fillStyle = '#caa07a';
+  ctx.beginPath(); ctx.ellipse(0, 120, 24, 11, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+  return asTexture(c);
+}
+
+// Kept for reference / quick-fallback if anyone wants the single-sprite
+// version: still useful as a thumbnail / share image generator.
 export function makeNounoursTexture() {
   const W = 512, H = 640;
   const c = makeCanvas(W, H);
